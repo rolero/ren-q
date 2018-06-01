@@ -20,7 +20,7 @@ namespace ren_q
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .UseUrls("http://localhost:8888")
+                .UseUrls("http://0.0.0.0:8888")
                 .Build();
     }
 }
