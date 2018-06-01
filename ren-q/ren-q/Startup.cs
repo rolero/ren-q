@@ -11,7 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Swagger;
 using renq.Data;
-
+using renq.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace ren_q
 {
@@ -29,14 +30,25 @@ namespace ren_q
         {
             services.AddDbContext<AppDbContext>(options =>
             options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
-            
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+              .AddEntityFrameworkStores<AppDbContext>()
+              .AddDefaultTokenProviders();
+
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "Ren Quote API", Version = "v1" });
             });
 
 
-            services.AddMvc();
+            services.AddMvc()
+              .AddRazorPagesOptions(options =>
+              {
+                  options.Conventions.AuthorizeFolder("/Account/Manage");
+                  options.Conventions.AuthorizePage("/Account/Logout");
+              });
+            services.AddSingleton<IEmailSender, EmailSender>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,6 +58,7 @@ namespace ren_q
             {
                 app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
             }
             else
             {
@@ -62,8 +75,11 @@ namespace ren_q
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ren Quote API V1");
             });
-            app.UseMvc();
+
             app.UseStaticFiles();
+            app.UseAuthentication();
+            app.UseMvc();
+           
         }
     }
 }
